@@ -1,4 +1,4 @@
-module deviceProtolState
+module github.com/Rellopn/deviceProtoState
 
 go 1.14
 
