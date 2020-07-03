@@ -24,10 +24,12 @@ type Option struct {
 	redisCfg
 }
 
-func (o *Option) RedisStateCfg(host, port, pwd string, db ...int) {
+func RedisStateCfg(host, port, pwd string, db ...int) *Option {
+	o := &Option{}
 	o.Host, o.Port, o.Pwd = host, port, pwd
 	if len(db) > 0 {
 		o.Db = db[0]
 	}
 	o.StateDb = REDIS
+	return o
 }

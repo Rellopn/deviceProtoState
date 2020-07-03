@@ -20,7 +20,7 @@ const (
 )
 
 type DpState struct {
-	Opt         Option
+	Opt         *Option
 	TTl         int64
 	RedisClient *redis.Client
 	protoType   int
@@ -28,7 +28,7 @@ type DpState struct {
 	MqttProto
 }
 
-func NewDpState(option Option) (*DpState, error) {
+func NewDpState(option *Option) (*DpState, error) {
 	opt := &DpState{Opt: option, Cache: cache.New(5*time.Minute, 10*time.Minute)}
 	if option.StateDb == REDIS {
 		err := opt.RedisState()
