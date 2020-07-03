@@ -78,7 +78,7 @@ func PubCheckMsg(state *DpState, IMSI string, retained bool, payload interface{}
 		return pload, nil
 	case <-timer.C:
 		state.Cache.Delete(randStr)
-		return "", errors.New("设备：" + IMSI + "超时")
+		return "", errors.New("设备:" + IMSI + "超时")
 	}
 }
 func NotifyWait(state *DpState, waitId, payload string) bool {
