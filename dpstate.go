@@ -56,6 +56,37 @@ func (d *DpState) RedisState() error {
 	d.RedisClient = redisClient
 	return nil
 }
+func (d *DpState) PubCheckMsg(topic string, retained bool, payload interface{},
+	randStr string) (string, error) {
+	expireSecond := time.Duration(d.TTl) * time.Second
+	if token := d.Mc.Publish(topic, 1, retained, payload);
+		token.WaitTimeout(expireSecond) && token.Error() != nil {
+		return "", token.Error()
+	}
+	if err := d.RedisClient.Set(randStr, payload, expireSecond).Err(); err != nil {
+		return "", err
+	}
+
+	waitChan := make(chan string)
+	d.Cache.Set(randStr, waitChan, expireSecond)
+	timer := time.NewTimer(expireSecond)
+	defer timer.Stop()
+	select {
+	case pload := <-waitChan:
+		d.Cache.Delete(randStr)
+		return pload, nil
+	case <-timer.C:
+		d.Cache.Delete(randStr)
+		return "", errors.New("设备:" + topic + "超时")
+	}
+}
+func (d *DpState) NotifyWait(waitId, payload string) bool {
+	waitChan, found := d.Cache.Get(waitId)
+	if found {
+		waitChan.(chan string) <- payload
+	}
+	return found
+}
 
 func PubCheckMsg(state *DpState, IMSI string, retained bool, payload interface{},
 	randStr string) (string, error) {
